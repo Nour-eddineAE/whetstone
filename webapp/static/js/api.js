@@ -10,7 +10,7 @@ export const checkAnswer = (pid, track, text) =>
   fetch(`/api/check/${pid}/${track}`, post({ text })).then(j);
 export const checkFile = (pid, track) =>
   fetch(`/api/check/${pid}/${track}`, post({})).then(j);   // grade saved file as-is
-export const getHint = (pid) => fetch(`/api/hint/${pid}`).then(j);
+export const getHint = (pid, track) => fetch(`/api/hint/${pid}/${track}`).then(j);
 export const reveal = (pid, track) => fetch(`/api/reveal/${pid}/${track}`).then(j);
 export const runScratch = (sql) => fetch("/api/run/sql", post({ sql })).then(j);
 export const getCheatsheets = () => fetch("/api/cheatsheets").then(j);

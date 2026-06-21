@@ -29,5 +29,10 @@ def read_solution(pid, track):
     return f.read_text() if f.exists() else "(no reference for this track)"
 
 
-def get_hint(pid):
-    return meta.get(pid).get("hint", "(no hint)")
+def get_hint(pid, track=None):
+    """Track-specific hint (hint_sql / hint_pyspark) when present, else the
+    generic `hint`."""
+    m = meta.get(pid)
+    if track and m.get(f"hint_{track}"):
+        return m[f"hint_{track}"]
+    return m.get("hint", "(no hint)")

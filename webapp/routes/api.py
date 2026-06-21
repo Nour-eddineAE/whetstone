@@ -31,7 +31,7 @@ def problem(pid, track):
         "id": pid, "track": track, "category": m["category"],
         "difficulty": m["difficulty"], "ordered": m["ordered"],
         "columns": m["columns"], "tables": m["tables"], "tracks": m["tracks"],
-        "prompt": m["prompt"], "hint": m.get("hint", ""),
+        "prompt": m["prompt"], "hint": content.get_hint(pid, track),
         "answer": content.read_answer(pid, track),
         "status": get_status(pid, track),
         "samples": dataset.samples_for(m["tables"]),
@@ -74,11 +74,11 @@ def run_sql_scratch():
         return jsonify({"error": f"{type(e).__name__}: {e}"})
 
 
-@bp.get("/hint/<pid>")
-def hint(pid):
+@bp.get("/hint/<pid>/<track>")
+def hint(pid, track):
     if pid not in meta.all_ids():
         return jsonify({"error": "unknown problem"}), 404
-    return jsonify({"id": pid, "hint": content.get_hint(pid)})
+    return jsonify({"id": pid, "track": track, "hint": content.get_hint(pid, track)})
 
 
 @bp.get("/reveal/<pid>/<track>")

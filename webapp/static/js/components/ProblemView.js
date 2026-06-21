@@ -28,7 +28,7 @@ export function ProblemView({ pid, track, onStatus }) {
     await api.saveAnswer(pid, track, handle.current.getValue());
     setResult({ kind: "info", msg: "Saved to answers/" + track + "/" + pid });
   }
-  async function doHint() { setResult({ kind: "hint", text: (await api.getHint(pid)).hint }); }
+  async function doHint() { setResult({ kind: "hint", text: (await api.getHint(pid, track)).hint }); }
   async function doReveal() {
     if (!confirm(`Reveal the reference solution for ${pid} (${track})?`)) return;
     setResult({ kind: "reveal", track, solution: (await api.reveal(pid, track)).solution });

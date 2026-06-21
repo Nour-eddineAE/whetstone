@@ -1,0 +1,33 @@
+"""Access to answer files, reference solutions, and hints.
+
+answers/ stay the single source of truth: both the CLI and the web app read and
+write through here, so they can never grade different bytes.
+"""
+from . import config, meta
+
+
+def track_file(pid, track, ref=False):
+    """Path to a problem's code file. ref=True -> reference under solutions/."""
+    root = config.SOLUTIONS_DIR if ref else config.ANSWERS_DIR
+    return root / track / f"{pid}.{config.EXT[track]}"
+
+
+def read_answer(pid, track):
+    f = track_file(pid, track)
+    return f.read_text() if f.exists() else ""
+
+
+def write_answer(pid, track, text):
+    f = track_file(pid, track)
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(text)
+    return f
+
+
+def read_solution(pid, track):
+    f = track_file(pid, track, ref=True)
+    return f.read_text() if f.exists() else "(no reference for this track)"
+
+
+def get_hint(pid):
+    return meta.get(pid).get("hint", "(no hint)")

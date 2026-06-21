@@ -1,9 +1,11 @@
 # p19 distinct vs dropDuplicates, as three counts in one row.
+from typing import Dict
+from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
 
-def solve(spark, dfs):
+def solve(spark: SparkSession, dfs: Dict[str, DataFrame]) -> DataFrame:
     ev = dfs["events"]
     total = ev.count()
     distinct_all = ev.distinct().count()                       # whole-row dedup

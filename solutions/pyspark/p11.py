@@ -1,10 +1,12 @@
 # p11 frame trap. Same F.sum('amount'): with an ordered row-frame it is a running
 # total; with only partitionBy (no order, full frame) it is the grand total.
+from typing import Dict
+from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
 
-def solve(spark, dfs):
+def solve(spark: SparkSession, dfs: Dict[str, DataFrame]) -> DataFrame:
     t = dfs["transactions"]
     w_run = (Window.partitionBy("user_id").orderBy("txn_date", "txn_id")
              .rowsBetween(Window.unboundedPreceding, Window.currentRow))

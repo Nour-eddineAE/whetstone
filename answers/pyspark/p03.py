@@ -1,10 +1,14 @@
 # p03 [joins/med]
 # Implement solve(spark, dfs) -> DataFrame. Expected columns: emp_id, name
 # dfs keys: employees, departments, events, transactions, user_tags
+from typing import Dict
+from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
 
-def solve(spark, dfs):
+def solve(spark: SparkSession, dfs: Dict[str, DataFrame]) -> DataFrame:
     # TODO: replace with your solution
-    raise NotImplementedError
+    return dfs["employees"] \
+			.join(dfs["departments"], dfs["employees"]["dept"] == dfs["departments"]["dept_name"], how="leftanti") \
+			.select("emp_id", "name", "dept_id") 

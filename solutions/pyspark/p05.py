@@ -1,10 +1,12 @@
 # p05 revenue per dept. Join ONE child (transactions) then aggregate.
 # Joining events too would fan-out and inflate the sum.
+from typing import Dict
+from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
 
-def solve(spark, dfs):
+def solve(spark: SparkSession, dfs: Dict[str, DataFrame]) -> DataFrame:
     e, t = dfs["employees"], dfs["transactions"]
     return (e.join(t, e.emp_id == t.user_id)
             .groupBy("dept")

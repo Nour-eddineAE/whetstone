@@ -118,19 +118,35 @@ def _environment():
     return _env_cache[path]
 
 
-def complete(code, line, column, limit=50):
-    """Jedi completions at a 0-based (line, column). Returns a list of
-    {name, insert, type, detail} sorted by Jedi's own relevance."""
+def _signature(c):
+    """(param_names, full_signature) for a callable completion, else (None, None).
+    Jedi infers types here, so keep it to the short list we actually return."""
+    try:
+        sigs = c.get_signatures()
+        if not sigs:
+            return None, None
+        s = sigs[0]
+        return [p.name for p in s.params], s.to_string()
+    except Exception:
+        return None, None
+
+
+def complete(code, line, column, limit=40):
+    """Jedi completions at a 0-based (line, column). `fuzzy=True` matches the
+    typed letters as a subsequence (like a real editor), not just a prefix.
+    Returns {name, insert, type, params, signature}."""
     import jedi
 
     script = jedi.Script(code, environment=_environment())
     items = []
-    for c in script.complete(line + 1, column):  # Jedi lines are 1-based
+    for c in script.complete(line + 1, column, fuzzy=True):  # Jedi lines are 1-based
+        params, signature = _signature(c)
         items.append({
             "name": c.name,
             "insert": c.complete or "",   # text to append after the cursor
             "type": c.type,               # module/class/function/keyword/instance/...
-            "detail": (c.description or "")[:80],
+            "params": params,             # e.g. ["col", "initialValue"] or None
+            "signature": signature,       # full "f(col: ColumnOrName) -> Column" or None
         })
         if len(items) >= limit:
             break

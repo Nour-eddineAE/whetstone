@@ -156,5 +156,9 @@ pre.sol{background:#0b0e13;border:1px solid var(--border);border-radius:10px;
 /* ---- autocomplete popup (CodeMirror show-hint) ---- */
 .CodeMirror-hints{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
       box-shadow:0 8px 24px rgba(0,0,0,.45);font:12px Menlo,Consolas,monospace;z-index:50}
-.CodeMirror-hint{color:var(--text);padding:3px 10px}
+.CodeMirror-hint{color:var(--text);padding:3px 10px;max-width:520px;overflow:hidden;text-overflow:ellipsis}
 li.CodeMirror-hint-active{background:var(--accent);color:#fff}
+.CodeMirror-hint .h-params{color:var(--muted)}
+.CodeMirror-hint .h-type{color:#6f7d8c;font-style:italic;margin-left:8px}
+li.CodeMirror-hint-active .h-params,
+li.CodeMirror-hint-active .h-type{color:#dce7ff}

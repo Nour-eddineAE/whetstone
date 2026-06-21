@@ -12,8 +12,21 @@ function pythonHint(cm, callback) {
   api.completePython(cm.getValue(), cur.line, cur.ch).then((res) => {
     const list = (res.completions || []).map((c) => ({
       text: c.name,
-      displayText: c.type ? `${c.name} · ${c.type}` : c.name,
       className: "cm-hint-" + (c.type || "x"),
+      render(el) {                       // editor-style row, full signature on hover
+        el.title = c.signature || c.name;
+        const name = document.createElement("span");
+        name.className = "h-name"; name.textContent = c.name; el.appendChild(name);
+        if (c.params) {
+          const p = document.createElement("span");
+          p.className = "h-params"; p.textContent = `(${c.params.join(", ")})`;
+          el.appendChild(p);
+        }
+        if (c.type) {
+          const t = document.createElement("span");
+          t.className = "h-type"; t.textContent = c.type; el.appendChild(t);
+        }
+      },
     }));
     callback({ list, from, to: cur });
   }).catch(() => callback({ list: [], from, to: cur }));

@@ -13,7 +13,7 @@ a{color:var(--accent)}
 
 /* ---- left icon rail (sections) ---- */
 .rail{width:68px;flex:none;background:#0b0e13;border-right:1px solid var(--border);
-      display:flex;flex-direction:column;align-items:center;padding-top:12px;gap:4px}
+      display:flex;flex-direction:column;align-items:center;padding:12px 0 14px;gap:4px}
 .rail .logo{font-weight:700;font-size:18px;color:var(--accent);margin-bottom:12px}
 .rail .item{width:52px;height:52px;border-radius:12px;display:flex;flex-direction:column;
      align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);

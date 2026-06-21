@@ -130,3 +130,31 @@ pre.sol{background:#0b0e13;border:1px solid var(--border);border-radius:10px;
 .scoretable td .chk{margin-right:6px}
 
 .center{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)}
+
+/* ---- rail: pin bottom items (Settings) to the foot ---- */
+.rail-spacer{flex:1}
+
+/* ---- settings ---- */
+.settings-block{max-width:760px;margin-top:14px}
+.settings-block h2{font-size:14px;margin:0 0 6px}
+.cur-interp{margin:8px 0 14px}
+.cur-interp code,.settings-block p code{background:#0b0e13;border:1px solid var(--border);
+      border-radius:4px;padding:1px 6px;font:12px Menlo,Consolas,monospace;color:#9cc2ff}
+.env-list{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.env-row{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;
+      background:var(--panel);border:1px solid var(--border);border-radius:9px}
+.env-row:hover{background:var(--panel2)}
+.env-row.active{border-color:var(--accent);background:#16203a}
+.env-row .env-label{font-weight:600}
+.env-row .env-path{font:11px Menlo,Consolas,monospace;margin-left:auto;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46%}
+.manual-interp{display:flex;gap:8px;align-items:center}
+.path-input{flex:1;background:#0b0e13;border:1px solid var(--border);border-radius:8px;
+      padding:8px 11px;color:var(--text);font:13px Menlo,Consolas,monospace}
+.path-input:focus{outline:none;border-color:var(--accent)}
+
+/* ---- autocomplete popup (CodeMirror show-hint) ---- */
+.CodeMirror-hints{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
+      box-shadow:0 8px 24px rgba(0,0,0,.45);font:12px Menlo,Consolas,monospace;z-index:50}
+.CodeMirror-hint{color:var(--text);padding:3px 10px}
+li.CodeMirror-hint-active{background:var(--accent);color:#fff}

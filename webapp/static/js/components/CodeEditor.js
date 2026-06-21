@@ -1,4 +1,24 @@
 import { html, useEffect, useRef } from "../lib.js";
+import * as api from "../api.js";
+
+// Async Jedi-backed completion for Python: introspects the selected interpreter's
+// installed libraries (pyspark, pandas, types). Marked async so CodeMirror waits
+// for the server round-trip.
+function pythonHint(cm, callback) {
+  const cur = cm.getCursor();
+  const line = cm.getLine(cur.line).slice(0, cur.ch);
+  const prefix = (line.match(/[A-Za-z0-9_]*$/) || [""])[0];
+  const from = { line: cur.line, ch: cur.ch - prefix.length };
+  api.completePython(cm.getValue(), cur.line, cur.ch).then((res) => {
+    const list = (res.completions || []).map((c) => ({
+      text: c.name,
+      displayText: c.type ? `${c.name} · ${c.type}` : c.name,
+      className: "cm-hint-" + (c.type || "x"),
+    }));
+    callback({ list, from, to: cur });
+  }).catch(() => callback({ list: [], from, to: cur }));
+}
+pythonHint.async = true;
 
 // CodeMirror needs a fuller SQL keyword set than the generic text/x-sql mode
 // ships with (LEFT/JOIN/OVER/window funcs), so we supply it explicitly.
@@ -53,7 +73,7 @@ export function CodeEditor({ initial, mode, lineComment, onRun, handle }) {
       const complete = (cm) => {
         const hint = mode === "sql"
           ? (c) => CM.hint.sql(c, { tables: SQL_TABLES })
-          : CM.hint.anyword;
+          : pythonHint;
         cm.showHint({ hint, completeSingle: false });
       };
       const cm = CM(host, {

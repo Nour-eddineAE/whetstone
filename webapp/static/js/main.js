@@ -8,6 +8,7 @@ import { ProblemList } from "./components/ProblemList.js";
 import { ProblemView } from "./components/ProblemView.js";
 import { CheatSheetBrowser } from "./components/CheatSheetBrowser.js";
 import { Scoreboard } from "./components/Scoreboard.js";
+import { Settings } from "./components/Settings.js";
 
 function ProblemsSection({ problems, status, track, pid, onPick, onTrack, onStatus }) {
   return html`<>
@@ -50,6 +51,8 @@ function App() {
         pid=${pid} onPick=${setPid} onTrack=${changeTrack} onStatus=${setStatusFor} />`;
   else if (section === "cheatsheets")
     content = html`<${CheatSheetBrowser} />`;
+  else if (section === "settings")
+    content = html`<${Settings} />`;
   else
     content = html`<${Scoreboard} problems=${problems} status=${status} onStatus=${setStatusFor} />`;
 

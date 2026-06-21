@@ -92,6 +92,7 @@ export function CodeEditor({ initial, mode, lineComment, onRun, handle }) {
       const cm = CM(host, {
         value: initial, mode: mode === "sql" ? sqlMode : "python",
         theme: "material-darker", lineNumbers: true, indentUnit: 4, tabSize: 4, matchBrackets: true,
+        autoCloseBrackets: "()[]{}''\"\"``",   // wrap selection / auto-close pairs
         extraKeys: { "Cmd-Enter": () => onRun(), "Ctrl-Enter": () => onRun(),
                      "Cmd-E": toggle, "Ctrl-E": toggle, "Cmd-/": toggle, "Ctrl-/": toggle,
                      "Cmd-Space": complete, "Ctrl-Space": complete },

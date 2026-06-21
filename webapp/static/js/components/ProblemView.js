@@ -47,8 +47,8 @@ export function ProblemView({ pid, track, onStatus }) {
   if (!p) return html`<div className="center">Loading…</div>`;
   const lang = LANGUAGES.find((l) => l.id === track) || LANGUAGES[0];
   const hint = track === "sql"
-    ? "⌘/Ctrl+↵ run · select SQL + ⌘/Ctrl+↵ runs the selection · ⌘/Ctrl+E comments"
-    : "⌘/Ctrl+↵ run · ⌘/Ctrl+E comments";
+    ? "⌘/Ctrl+↵ run · select SQL + ⌘/Ctrl+↵ runs the selection · ⌘/Ctrl+Space autocomplete · ⌘/Ctrl+E comments"
+    : "⌘/Ctrl+↵ run · ⌘/Ctrl+Space autocomplete · ⌘/Ctrl+E comments";
 
   return html`
     <div>

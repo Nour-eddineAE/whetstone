@@ -9,6 +9,14 @@ const SQL_KEYWORDS = wordSet(`
   and or not in exists is null between like ilike similar to escape qualify window filter within
   case when then else end cast asc desc nulls first last partition over rows range groups
   unbounded preceding following current row insert into values update set delete create table view drop`);
+// Seed-data schema, so SQL autocomplete suggests real table + column names.
+const SQL_TABLES = {
+  employees: ["emp_id", "name", "dept", "salary", "manager_id", "hire_date"],
+  departments: ["dept_id", "dept_name"],
+  events: ["user_id", "event_type", "event_ts"],
+  transactions: ["txn_id", "user_id", "amount", "txn_date"],
+  user_tags: ["user_id", "tags"],
+};
 const SQL_BUILTIN = wordSet(`
   int integer bigint smallint double float decimal numeric varchar char text date timestamp time boolean
   count sum avg min max median stddev variance row_number rank dense_rank ntile lag lead first_value last_value
@@ -41,11 +49,19 @@ export function CodeEditor({ initial, mode, lineComment, onRun, handle }) {
                       atoms: { true: true, false: true, null: true } };
     if (CM) {
       const toggle = (cm) => cm.toggleComment({ indent: true, lineComment });
+      // Cmd/Ctrl-Space: SQL gets table + column aware hints, Python gets word hints.
+      const complete = (cm) => {
+        const hint = mode === "sql"
+          ? (c) => CM.hint.sql(c, { tables: SQL_TABLES })
+          : CM.hint.anyword;
+        cm.showHint({ hint, completeSingle: false });
+      };
       const cm = CM(host, {
         value: initial, mode: mode === "sql" ? sqlMode : "python",
         theme: "material-darker", lineNumbers: true, indentUnit: 4, tabSize: 4, matchBrackets: true,
         extraKeys: { "Cmd-Enter": () => onRun(), "Ctrl-Enter": () => onRun(),
-                     "Cmd-E": toggle, "Ctrl-E": toggle, "Cmd-/": toggle, "Ctrl-/": toggle },
+                     "Cmd-E": toggle, "Ctrl-E": toggle, "Cmd-/": toggle, "Ctrl-/": toggle,
+                     "Cmd-Space": complete, "Ctrl-Space": complete },
       });
       handle.current = { getValue: () => cm.getValue(),
                          getSelection: () => (cm.somethingSelected() ? cm.getSelection() : "") };

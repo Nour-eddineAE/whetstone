@@ -5,6 +5,7 @@ __pycache__/
 *.pyc
 .venv/
 .status.json
+.whetstone.json
 
 # editor / agent
 .idea/

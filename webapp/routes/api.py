@@ -1,7 +1,7 @@
 """JSON API routes. Thin wrappers over pengine - no business logic here."""
 from flask import Blueprint, jsonify, request
 
-from pengine import cheats, config, content, dataset, grader, meta
+from pengine import cheats, config, content, dataset, grader, meta, pyenv
 
 from ..state import STATUS, get_status, set_status
 
@@ -87,6 +87,34 @@ def reveal(pid, track):
         return jsonify({"error": "unknown problem/track"}), 404
     return jsonify({"id": pid, "track": track,
                     "solution": content.read_solution(pid, track)})
+
+
+@bp.get("/environments")
+def environments():
+    """Discovered Python interpreters + the one currently selected."""
+    return jsonify({"environments": pyenv.discover_environments(),
+                    "current": pyenv.current_interpreter()})
+
+
+@bp.post("/settings/interpreter")
+def set_interpreter():
+    path = (request.get_json(silent=True) or {}).get("path", "")
+    try:
+        return jsonify({"interpreter": pyenv.set_interpreter(path)})
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@bp.post("/complete/python")
+def complete_python():
+    """Env-aware Python completions via Jedi. Never 500s on a bad parse -- the
+    editor just shows nothing if completion fails."""
+    p = request.get_json(silent=True) or {}
+    try:
+        items = pyenv.complete(p.get("code", ""), int(p.get("line", 0)), int(p.get("ch", 0)))
+        return jsonify({"completions": items})
+    except Exception as e:
+        return jsonify({"completions": [], "error": f"{type(e).__name__}: {e}"})
 
 
 @bp.get("/cheatsheets")

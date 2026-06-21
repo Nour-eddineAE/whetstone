@@ -27,34 +27,44 @@ export function Settings() {
   }
 
   return html`
-    <main>
-      <h1>Settings</h1>
+    <main className="settings-page">
+      <header className="settings-head">
+        <h1>Settings</h1>
+        <p className="settings-sub">Configure how Whetstone runs and completes your code.</p>
+      </header>
 
-      <section className="settings-block">
-        <h2>Python interpreter</h2>
-        <p className="muted">
-          PySpark autocomplete reads libraries and types from this interpreter's
-          environment. Pick the one where <code>pyspark</code> is installed.
-        </p>
-        <p className="cur-interp">current: <code>${current}</code></p>
+      <section className="settings-section">
+        <div className="section-head">
+          <h2>Python interpreter</h2>
+          <p className="desc">
+            PySpark autocomplete reads libraries and types from this interpreter's
+            environment. Pick the one where <code>pyspark</code> is installed.
+          </p>
+        </div>
 
         <div className="env-list">
           ${envs.map((e) => html`
             <label key=${e.path} className=${"env-row" + (e.current ? " active" : "")}>
               <input type="radio" name="interp" checked=${e.current}
                      onChange=${() => choose(e.path)} />
-              <span className="env-label">${e.label}</span>
-              <span className="env-path muted">${e.path}</span>
+              <span className="env-main">
+                <span className="env-label">${e.label}</span>
+                <span className="env-path">${e.path}</span>
+              </span>
+              ${e.current ? html`<span className="env-tag">Active</span>` : null}
             </label>`)}
         </div>
 
-        <div className="manual-interp">
-          <input className="path-input" placeholder="/path/to/python"
-                 value=${manual} onInput=${(ev) => setManual(ev.target.value)} />
-          <button className="primary" disabled=${!manual.trim()}
-                  onClick=${() => choose(manual.trim())}>Use this path</button>
+        <div className="manual-row">
+          <span className="manual-label">Custom path</span>
+          <div className="manual-interp">
+            <input className="path-input" placeholder="/path/to/python"
+                   value=${manual} onInput=${(ev) => setManual(ev.target.value)} />
+            <button className="primary" disabled=${!manual.trim()}
+                    onClick=${() => choose(manual.trim())}>Use this path</button>
+          </div>
         </div>
-        ${msg ? html`<p className="muted">${msg}</p>` : null}
+        ${msg ? html`<p className=${"settings-msg" + (msg.includes("set") ? " ok" : " err")}>${msg}</p>` : null}
       </section>
     </main>`;
 }

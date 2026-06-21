@@ -117,6 +117,29 @@ def complete_python():
         return jsonify({"completions": [], "error": f"{type(e).__name__}: {e}"})
 
 
+@bp.post("/signature/python")
+def signature_python():
+    """Call signatures at the cursor (non-empty only when inside a call's parens).
+    Powers context-aware param hints. Never 500s."""
+    p = request.get_json(silent=True) or {}
+    try:
+        sigs = pyenv.signatures(p.get("code", ""), int(p.get("line", 0)), int(p.get("ch", 0)))
+        return jsonify({"signatures": sigs})
+    except Exception as e:
+        return jsonify({"signatures": [], "error": f"{type(e).__name__}: {e}"})
+
+
+@bp.post("/hover/python")
+def hover_python():
+    """Signature + docstring for the name under the cursor, for hover tooltips."""
+    p = request.get_json(silent=True) or {}
+    try:
+        info = pyenv.hover(p.get("code", ""), int(p.get("line", 0)), int(p.get("ch", 0)))
+        return jsonify({"info": info})
+    except Exception as e:
+        return jsonify({"info": None, "error": f"{type(e).__name__}: {e}"})
+
+
 @bp.get("/cheatsheets")
 def cheatsheets():
     return jsonify({"sheets": cheats.list_sheets()})

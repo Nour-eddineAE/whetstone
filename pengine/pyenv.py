@@ -151,3 +151,65 @@ def complete(code, line, column, limit=40):
         if len(items) >= limit:
             break
     return items
+
+
+def signatures(code, line, column):
+    """Call signatures for the call the cursor sits *inside* (between the parens).
+    Jedi returns nothing when the cursor isn't within a call, so a non-empty
+    result is itself the signal that we're in an argument list. `index` is the
+    active parameter (0-based) or None. Drives both in-args param hints and the
+    signature tooltip."""
+    import jedi
+
+    script = jedi.Script(code, environment=_environment())
+    out = []
+    for s in script.get_signatures(line + 1, column):  # Jedi lines are 1-based
+        params = []
+        for p in s.params:
+            params.append({
+                "name": p.name,
+                "kind": str(getattr(p, "kind", "")),  # POSITIONAL_OR_KEYWORD / VAR_POSITIONAL / ...
+                "desc": _param_desc(p),               # "col: ColumnOrName" (type if Jedi infers it)
+            })
+        out.append({
+            "name": s.name,
+            "label": s.to_string(),  # full "fillna(value, subset=None) -> DataFrame"
+            "index": s.index,        # active param index, or None
+            "params": params,
+        })
+    return out
+
+
+def _param_desc(p):
+    try:
+        return p.to_string()
+    except Exception:
+        return p.name
+
+
+def hover(code, line, column):
+    """Signature + docstring for the name under the cursor, for hover tooltips.
+    Returns None when there's nothing callable to describe."""
+    import jedi
+
+    script = jedi.Script(code, environment=_environment())
+    names = script.help(line + 1, column)
+    if not names:
+        return None
+    n = names[0]
+    sigs = []
+    try:
+        sigs = [s.to_string() for s in n.get_signatures()]
+    except Exception:
+        pass
+    doc = ""
+    try:
+        doc = (n.docstring(raw=False) or "").strip()
+    except Exception:
+        pass
+    return {
+        "name": n.name,
+        "type": n.type,            # function / method / class / instance / module / ...
+        "signatures": sigs,
+        "doc": doc[:600],
+    }

@@ -19,6 +19,10 @@ export const getEnvironments = () => fetch("/api/environments").then(j);
 export const setInterpreter = (path) => fetch("/api/settings/interpreter", post({ path })).then(j);
 export const completePython = (code, line, ch) =>
   fetch("/api/complete/python", post({ code, line, ch })).then(j);
+export const signaturePython = (code, line, ch) =>
+  fetch("/api/signature/python", post({ code, line, ch })).then(j);
+export const hoverPython = (code, line, ch) =>
+  fetch("/api/hover/python", post({ code, line, ch })).then(j);
 
 function post(body) {
   return { method: "POST", headers: { "Content-Type": "application/json" },

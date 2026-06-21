@@ -1,0 +1,1 @@
+select user_id, event_type, STRFTIME(event_ts, '%Y-%m-%d'), row_number() over (partition by user_id, event_type order by STRFTIME(event_ts, '%Y-%m-%d')) from events where event_type = 'login';

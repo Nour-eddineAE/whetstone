@@ -1,4 +1,7 @@
--- p24 [aggregation/med]
--- TODO: write your SQL. Expected columns: dept, headcount, avg_salary
--- (this TODO marker means 'not attempted' to the grader)
-SELECT 'TODO' AS todo;
+select dept, 
+		count(*) as headcount, 
+        AVG(salary) as avg_salary 
+from employees 
+group by dept
+having headcount > 5
+		and avg_salary > 70000; 

@@ -1,4 +1,4 @@
--- p20 [sparkops/easy]
--- TODO: write your SQL. Expected columns: emp_id, manager_id_filled
--- (this TODO marker means 'not attempted' to the grader)
-SELECT 'TODO' AS todo;
+select emp_id, 
+	case when manager_id is not NULL then manager_id 
+    else -1 end as manager_id_filled
+from employees; 

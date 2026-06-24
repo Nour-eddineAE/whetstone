@@ -1,4 +1,8 @@
--- p19 [sparkops/med]
--- TODO: write your SQL. Expected columns: total, distinct_all, distinct_user_event
--- (this TODO marker means 'not attempted' to the grader)
-SELECT 'TODO' AS todo;
+SELECT
+    (SELECT COUNT(*) FROM events) AS total_rows,
+    (SELECT COUNT(*) FROM (SELECT DISTINCT * FROM events)) AS distinct_rows,
+    (SELECT COUNT(*) FROM (SELECT DISTINCT user_id, event_type FROM events)) AS distinct_pair;
+    
+    
+    
+    

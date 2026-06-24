@@ -1,12 +1,18 @@
 # p05 [joins/med]
-# Implement solve(spark, dfs) -> DataFrame. Expected columns: dept, total_amount
-# dfs keys: employees, departments, events, transactions, user_tags
-from typing import Dict
-from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql import functions as F
-from pyspark.sql.window import Window
+# Implement solve(spark, employees, transactions) -> DataFrame. Expected columns: dept, total_amount
+
+def solve(spark: SparkSession, employees: DataFrame, transactions: DataFrame) -> DataFrame:
+    return employees.join(transactions, on=employees["emp_id"] == transactions["user_id"], how="left") \
+    			.groupBy("dept") \
+    			.agg(sum("amount").alias("total_amount")) \
+    			.select("dept", "total_amount") \
+				.filter(col("total_amount").isNotNull()) \
 
 
-def solve(spark: SparkSession, dfs: Dict[str, DataFrame]) -> DataFrame:
-    # TODO: replace with your solution
-    raise NotImplementedError
+
+
+   
+
+
+
+

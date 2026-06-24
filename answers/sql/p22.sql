@@ -1,4 +1,4 @@
--- p22 [joins/med]
--- TODO: write your SQL. Expected columns: emp_id, name, salary, manager_salary
--- (this TODO marker means 'not attempted' to the grader)
-SELECT 'TODO' AS todo;
+SELECT e.emp_id, e.name, e.salary, m.salary AS manager_salary
+FROM employees e
+JOIN employees m ON e.manager_id = m.emp_id
+WHERE e.salary > m.salary;

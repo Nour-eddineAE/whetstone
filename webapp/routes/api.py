@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request
 
 from pengine import cheats, config, content, dataset, grader, meta, pyenv
 
+from ..activity import dashboard_data, record
 from ..state import STATUS, get_status, set_status
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -26,6 +27,7 @@ def problems():
 def problem(pid, track):
     if not _valid(pid, track):
         return jsonify({"error": "unknown problem/track"}), 404
+    record("problem_open", pid=pid, track=track)
     m = meta.get(pid)
     return jsonify({
         "id": pid, "track": track, "category": m["category"],
@@ -59,6 +61,7 @@ def check(pid, track):
         content.write_answer(pid, track, payload["text"])
     res = grader.grade_result(track, pid)   # fresh import inside -> no stale solve()
     set_status(pid, track, res["status"])
+    record("problem_check", pid=pid, track=track, status=res["status"])
     return jsonify(res)
 
 
@@ -141,6 +144,11 @@ def hover_python():
         return jsonify({"info": None, "error": f"{type(e).__name__}: {e}"})
 
 
+@bp.get("/dashboard")
+def dashboard():
+    return jsonify(dashboard_data(STATUS))
+
+
 @bp.get("/cheatsheets")
 def cheatsheets():
     return jsonify({"sheets": cheats.list_sheets()})
@@ -151,4 +159,5 @@ def cheatsheet(slug):
     sheet = cheats.render(slug)
     if sheet is None:
         return jsonify({"error": "unknown cheat sheet"}), 404
+    record("sheet_view", slug=slug)
     return jsonify(sheet)

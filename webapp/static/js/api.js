@@ -13,6 +13,7 @@ export const checkFile = (pid, track) =>
 export const getHint = (pid, track) => fetch(`/api/hint/${pid}/${track}`).then(j);
 export const reveal = (pid, track) => fetch(`/api/reveal/${pid}/${track}`).then(j);
 export const runScratch = (sql) => fetch("/api/run/sql", post({ sql })).then(j);
+export const getDashboard = () => fetch("/api/dashboard").then(j);
 export const getCheatsheets = () => fetch("/api/cheatsheets").then(j);
 export const getCheatsheet = (slug) => fetch(`/api/cheatsheet/${slug}`).then(j);
 export const getEnvironments = () => fetch("/api/environments").then(j);

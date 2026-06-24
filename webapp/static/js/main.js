@@ -7,6 +7,7 @@ import { LanguagePicker } from "./components/LanguagePicker.js";
 import { ProblemList } from "./components/ProblemList.js";
 import { ProblemView } from "./components/ProblemView.js";
 import { CheatSheetBrowser } from "./components/CheatSheetBrowser.js";
+import { Dashboard } from "./components/Dashboard.js";
 import { Scoreboard } from "./components/Scoreboard.js";
 import { Settings } from "./components/Settings.js";
 
@@ -28,11 +29,12 @@ function ProblemsSection({ problems, status, track, pid, onPick, onTrack, onStat
 }
 
 function App() {
-  const [section, setSection] = useState("problems");
+  const [section, _setSection] = useState("problems");
   const [problems, setProblems] = useState([]);
   const [status, setStatus] = useState({});
   const [track, setTrack] = useState(LANGUAGES[0].id);
   const [pid, setPid] = useState(null);
+  const [cheatSlug, setCheatSlug] = useState(null);
 
   useEffect(() => {
     api.getProblems().then((d) => {
@@ -45,12 +47,24 @@ function App() {
   const setStatusFor = (p, t, st) => setStatus((s) => ({ ...s, [p + ":" + t]: st }));
   const changeTrack = (t) => { setTrack(t); setPid(firstUnfinished(problems, status, t)); };
 
+  const setSection = (s) => {
+    if (s === "cheatsheets") setCheatSlug(null);
+    _setSection(s);
+  };
+
+  const openSheet = (slug) => {
+    setCheatSlug(slug);
+    _setSection("cheatsheets");
+  };
+
   let content;
   if (section === "problems")
     content = html`<${ProblemsSection} problems=${problems} status=${status} track=${track}
         pid=${pid} onPick=${setPid} onTrack=${changeTrack} onStatus=${setStatusFor} />`;
   else if (section === "cheatsheets")
-    content = html`<${CheatSheetBrowser} />`;
+    content = html`<${CheatSheetBrowser} key=${cheatSlug || "grid"} initialSlug=${cheatSlug} />`;
+  else if (section === "progress")
+    content = html`<${Dashboard} onOpenSheet=${openSheet} />`;
   else if (section === "settings")
     content = html`<${Settings} />`;
   else

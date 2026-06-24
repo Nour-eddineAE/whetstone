@@ -3,9 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SQL + PySpark Practice</title>
-<link rel="stylesheet" href="/css/app.css">
-
+<title>Whetstone</title>
 <!-- CodeMirror (editor) + highlight.js (cheat-sheet code) via CDN.
      If offline these fail silently: the editor degrades to a <textarea>
      and cheat-sheet code simply renders unhighlighted. App still works. -->
@@ -19,6 +17,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
 <!-- Autocomplete (Cmd/Ctrl-Space): show-hint addon + SQL and word hint sources. -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+<!-- app.css loads last so its dark-theme overrides win over CDN defaults -->
+<link rel="stylesheet" href="/css/app.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/sql-hint.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>

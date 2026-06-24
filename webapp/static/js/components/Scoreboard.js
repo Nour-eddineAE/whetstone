@@ -12,6 +12,13 @@ export function Scoreboard({ problems, status, onStatus }) {
   problems.forEach((p) => p.tracks.forEach((t) =>
     rows.push({ id: p.id, cat: p.category, track: t, st: status[p.id + ":" + t] || "" })));
 
+  const kpi = {
+    total: rows.length,
+    passed: rows.filter((r) => r.st === "PASS").length,
+    failed: rows.filter((r) => r.st === "FAIL").length,
+    untried: rows.filter((r) => !r.st).length,
+  };
+
   async function rerun() {
     setBusy(true);
     const combos = [];
@@ -28,6 +35,24 @@ export function Scoreboard({ problems, status, onStatus }) {
   return html`
     <main>
       <h1>Scoreboard</h1>
+      <div className="dash-kpis">
+        <div className="kpi-tile">
+          <span className="kpi-value">${kpi.total}</span>
+          <span className="kpi-label">Total</span>
+        </div>
+        <div className="kpi-tile is-pass">
+          <span className="kpi-value">${kpi.passed}</span>
+          <span className="kpi-label">Passed</span>
+        </div>
+        <div className="kpi-tile is-fail">
+          <span className="kpi-value">${kpi.failed}</span>
+          <span className="kpi-label">Failed</span>
+        </div>
+        <div className="kpi-tile">
+          <span className="kpi-value">${kpi.untried}</span>
+          <span className="kpi-label">Untried</span>
+        </div>
+      </div>
       <div className="toolbar">
         <button className="primary" disabled=${busy} onClick=${rerun}>Re-run all attempted</button>
         <span className="muted">${msg}</span>

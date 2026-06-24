@@ -151,37 +151,55 @@ const STRING_VALUES = {
 // Practice dataset schema (same tables back the PySpark dfs and the SQL problems).
 const ALL_COLUMNS = [...new Set(Object.values(SQL_TABLES).flat())];
 
-// VSCode-style value completion inside a string literal. Decides from the text
-// just before the opening quote what kind of value belongs there:
+
+// VSCode-style value completion for string arguments. Three cases:
 //   dfs["<here>"]          -> table/dfs keys
-//   how="<here>"           -> the param's value set (STRING_VALUES)
+//   how="<here>"           -> STRING_VALUES for that param
 //   select("<here>", ...)  -> column names (any string arg in a call)
-// Returns a show-hint payload, or null when the cursor isn't in a relevant string.
+//   how=<here> (no quotes) -> same STRING_VALUES, inserts with quotes
+// Returns a show-hint payload, or null when the cursor isn't in a relevant context.
 function stringValueHint(cm, cur) {
   const tok = cm.getTokenAt(cur);
-  if (tok.type !== "string" && tok.type !== "string-2") return null;
   const line = cm.getLine(cur.line).slice(0, cur.ch);
-  const m = line.match(/(["'])([^"']*)$/);          // open quote + typed text, no close yet
-  if (!m) return null;
-  const typed = m[2];
-  const openIdx = cur.ch - typed.length - 1;
-  const before = cm.getLine(cur.line).slice(0, openIdx).trimEnd();
 
-  let values = null;
-  if (/dfs\s*\[$/.test(before)) {
-    values = Object.keys(SQL_TABLES);
-  } else {
-    const kw = before.match(/([A-Za-z_]\w*)\s*=$/);
-    if (kw && STRING_VALUES[kw[1]]) values = STRING_VALUES[kw[1]];
-    else if (/[(,]$/.test(before)) values = ALL_COLUMNS;   // a string arg position in a call
+  // Case A: cursor is inside an open string literal
+  if (tok.type === "string" || tok.type === "string-2") {
+    const m = line.match(/(["'])([^"']*)$/);      // open quote + typed text
+    if (!m) return null;
+    const typed = m[2];
+    const openIdx = cur.ch - typed.length - 1;
+    const before = cm.getLine(cur.line).slice(0, openIdx).trimEnd();
+
+    let values = null;
+    if (/dfs\s*\[$/.test(before)) {
+      values = Object.keys(SQL_TABLES);
+    } else {
+      const kw = before.match(/([A-Za-z_]\w*)\s*=$/);
+      if (kw && STRING_VALUES[kw[1]]) values = STRING_VALUES[kw[1]];
+      else if (/[(,]\s*$/.test(before)) values = ALL_COLUMNS;
+    }
+    if (!values) return null;
+
+    const t = typed.toLowerCase();
+    const list = values.filter((v) => v.toLowerCase().includes(t))
+                       .map((v) => ({ text: v, displayText: v, className: "cm-hint-str" }));
+    if (!list.length) return null;
+    return { list, from: { line: cur.line, ch: openIdx + 1 }, to: cur };
   }
-  if (!values) return null;
 
-  const t = typed.toLowerCase();
-  const list = values.filter((v) => v.toLowerCase().includes(t))
-                     .map((v) => ({ text: v, displayText: v, className: "cm-hint-str" }));
-  if (!list.length) return null;
-  return { list, from: { line: cur.line, ch: openIdx + 1 }, to: cur };
+  // Case B: cursor at `param=` or `param=<unquoted partial>` — inserts value with quotes.
+  // The partial ([A-Za-z_]*) at end must reach $ so it won't fire once the call is closed.
+  const kwB = line.match(/([A-Za-z_]\w*)\s*=\s*([A-Za-z_]*)$/);
+  if (kwB && STRING_VALUES[kwB[1]]) {
+    const typed = kwB[2].toLowerCase();
+    const list = STRING_VALUES[kwB[1]]
+      .filter((v) => !typed || v.toLowerCase().startsWith(typed))
+      .map((v) => ({ text: `"${v}"`, displayText: v, className: "cm-hint-str" }));
+    if (!list.length) return null;
+    return { list, from: { line: cur.line, ch: cur.ch - kwB[2].length }, to: cur };
+  }
+
+  return null;
 }
 
 // On-type Python helper: bracket depth of all text above `line`, so we can tell
@@ -304,8 +322,8 @@ export function CodeEditor({ initial, mode, lineComment, onRun, handle }) {
         });
 
         // Auto-trigger completion as you type (VSCode-style): identifiers, after a
-        // ".", inside "(" / after "=", and inside strings that have a known value
-        // set. Debounced; skipped in comments and while a popup is already open.
+        // ".", inside "(" / after "=" or ",", and inside strings that have a known
+        // value set. Debounced; skipped in comments and while a popup is already open.
         let acTimer;
         cm.on("inputRead", (_cm, change) => {
           if (change.origin !== "+input") return;
@@ -314,11 +332,19 @@ export function CodeEditor({ initial, mode, lineComment, onRun, handle }) {
           if (tok.type === "comment") return;
           const text = change.text[0] || "";
           const inStr = tok.type === "string" || tok.type === "string-2";
-          const fire = inStr ? !!stringValueHint(cm, cur) : /[A-Za-z_.=(]/.test(text);
+          let fire;
+          if (inStr) {
+            fire = !!stringValueHint(cm, cur);
+          } else if (text === ",") {
+            fire = currentCallArgs(cm, cur) !== null;   // only trigger inside a call
+          } else {
+            fire = /[A-Za-z_.=(]/.test(text);
+          }
           if (!fire) return;
           clearTimeout(acTimer);
           acTimer = setTimeout(() => { if (!cm.state.completionActive) complete(cm); }, 150);
         });
+
       }
       // Hover (Python only): show the signature + doc of the name under the
       // pointer. Debounced, deduped per token, and only for callables/classes so

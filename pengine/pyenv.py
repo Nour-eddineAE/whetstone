@@ -118,6 +118,25 @@ def _environment():
     return _env_cache[path]
 
 
+# Prepended to PySpark code before Jedi sees it, so bare function names (col,
+# when, sum, ...) and types autocomplete even before the user has written imports.
+# The line-count offset is applied to cursor positions to keep them accurate.
+_PYSPARK_PREAMBLE = (
+    "from pyspark.sql.functions import *\n"
+    "from pyspark.sql.window import Window\n"
+    "from pyspark.sql.types import *\n"
+    "from pyspark.sql import SparkSession, DataFrame, Row\n"
+)
+_PREAMBLE_LINES = _PYSPARK_PREAMBLE.count("\n")
+
+
+def _pyspark_context(code: str, line: int, column: int):
+    """Prepend preamble if code looks like a PySpark file; adjust line offset."""
+    if "pyspark" in code or "def solve(" in code:
+        return _PYSPARK_PREAMBLE + code, line + _PREAMBLE_LINES, column
+    return code, line, column
+
+
 def _signature(c):
     """(param_names, full_signature) for a callable completion, else (None, None).
     Jedi infers types here, so keep it to the short list we actually return."""
@@ -137,6 +156,7 @@ def complete(code, line, column, limit=40):
     Returns {name, insert, type, params, signature}."""
     import jedi
 
+    code, line, column = _pyspark_context(code, line, column)
     script = jedi.Script(code, environment=_environment())
     items = []
     for c in script.complete(line + 1, column, fuzzy=True):  # Jedi lines are 1-based
@@ -161,6 +181,7 @@ def signatures(code, line, column):
     signature tooltip."""
     import jedi
 
+    code, line, column = _pyspark_context(code, line, column)
     script = jedi.Script(code, environment=_environment())
     out = []
     for s in script.get_signatures(line + 1, column):  # Jedi lines are 1-based
@@ -192,6 +213,7 @@ def hover(code, line, column):
     Returns None when there's nothing callable to describe."""
     import jedi
 
+    code, line, column = _pyspark_context(code, line, column)
     script = jedi.Script(code, environment=_environment())
     names = script.help(line + 1, column)
     if not names:

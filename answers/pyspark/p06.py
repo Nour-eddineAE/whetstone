@@ -1,10 +1,16 @@
 # p06 [window/easy]
 # Implement solve(spark, employees) -> DataFrame. Expected columns: dept, emp_id, name, salary
-from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql import functions as F
-from pyspark.sql.window import Window
 
 
 def solve(spark: SparkSession, employees: DataFrame) -> DataFrame:
-    # TODO: replace with your solution
-    raise NotImplementedError
+    rnWindow = Window.partitionBy("dept") \
+    				.orderBy(col("salary").desc(), col("emp_id"))
+    
+    return employees \
+			.withColumn("rn", row_number().over(rnWindow)) \
+			.filter(col("rn") == 1)\
+    		.select("dept", "emp_id", "name", "salary")
+    		
+    
+    
+    

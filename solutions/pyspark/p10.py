@@ -1,12 +1,11 @@
 # p10 month-over-month. Aggregate monthly first, then lag() over month order.
-from typing import Dict
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
 
-def solve(spark: SparkSession, dfs: Dict[str, DataFrame]) -> DataFrame:
-    t = dfs["transactions"]
+def solve(spark: SparkSession, transactions: DataFrame) -> DataFrame:
+    t = transactions
     monthly = (t.withColumn("month", F.date_format("txn_date", "yyyy-MM"))
                .groupBy("month")
                .agg(F.sum("amount").alias("monthly_amount")))

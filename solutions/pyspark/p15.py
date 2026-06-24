@@ -1,12 +1,11 @@
 # p15 funnel. countDistinct per step, then explicit funnel ordering (order matters).
-from typing import Dict
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
 
-def solve(spark: SparkSession, dfs: Dict[str, DataFrame]) -> DataFrame:
-    ev = dfs["events"].where(F.col("event_type").isin("view", "signup", "purchase"))
+def solve(spark: SparkSession, events: DataFrame) -> DataFrame:
+    ev = events.where(F.col("event_type").isin("view", "signup", "purchase"))
     counts = ev.groupBy("event_type").agg(F.countDistinct("user_id").alias("users"))
     order = (F.when(F.col("event_type") == "view", 1)
              .when(F.col("event_type") == "signup", 2)

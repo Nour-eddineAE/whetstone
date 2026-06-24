@@ -1,13 +1,12 @@
 # p03 anti-join: leaf employees (never appear as a manager_id).
 # left_anti is the NULL-safe equivalent of NOT IN / NOT EXISTS.
-from typing import Dict
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
 
-def solve(spark: SparkSession, dfs: Dict[str, DataFrame]) -> DataFrame:
-    e = dfs["employees"]
+def solve(spark: SparkSession, employees: DataFrame) -> DataFrame:
+    e = employees
     managers = (e.select(F.col("manager_id").alias("mid"))
                 .where(F.col("mid").isNotNull())
                 .distinct())

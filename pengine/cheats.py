@@ -2,6 +2,7 @@
 
 No grading - pure reference content. Title is the first H1 in the file (or the
 slug). Ordering follows a leading 'NN-' number in the filename when present.
+Subject is derived from the slug prefix so the UI can group sheets.
 """
 import re
 
@@ -10,6 +11,17 @@ import markdown
 from . import config
 
 _MD_EXT = ["fenced_code", "tables", "toc", "sane_lists"]
+
+# Map slug prefix -> display subject name. Add new prefixes here as content grows.
+_SUBJECT_MAP = {
+    "sql":       "SQL",
+    "pyspark":   "PySpark",
+    "java":      "Java",
+    "spring":    "Spring",
+    "canonical": "Patterns",
+    "interview": "Interview",
+}
+_SUBJECT_ORDER = list(_SUBJECT_MAP.values())
 
 
 def _title(text, slug):
@@ -22,13 +34,25 @@ def _slug(path):
     return re.sub(r"^\d+-", "", path.stem)
 
 
+def _subject(slug):
+    prefix = slug.split("-")[0]
+    return _SUBJECT_MAP.get(prefix, prefix.title())
+
+
 def list_sheets():
     if not config.CHEATS_DIR.exists():
         return []
     out = []
     for p in sorted(config.CHEATS_DIR.glob("*.md")):
-        out.append({"slug": _slug(p), "title": _title(p.read_text(), _slug(p))})
-    return out
+        slug = _slug(p)
+        out.append({"slug": slug, "title": _title(p.read_text(), slug), "subject": _subject(slug)})
+
+    def _key(s):
+        subj = s["subject"]
+        i = _SUBJECT_ORDER.index(subj) if subj in _SUBJECT_ORDER else 99
+        return (i, s["slug"])
+
+    return sorted(out, key=_key)
 
 
 def _path_for(slug):

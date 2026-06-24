@@ -120,15 +120,16 @@ def scaffold_stubs():
             f = content.track_file(pid, "pyspark")
             if not f.exists():
                 f.parent.mkdir(parents=True, exist_ok=True)
+                tables = m["tables"]
+                params = ", ".join(f"{t}: DataFrame" for t in tables)
+                param_names = ", ".join(tables)
                 f.write_text(
                     f"# {pid} [{tag}]\n"
-                    f"# Implement solve(spark, dfs) -> DataFrame. Expected columns: {cols}\n"
-                    f"# dfs keys: {', '.join(config.TABLES)}\n"
-                    f"from typing import Dict\n"
+                    f"# Implement solve(spark, {param_names}) -> DataFrame. Expected columns: {cols}\n"
                     f"from pyspark.sql import DataFrame, SparkSession\n"
                     f"from pyspark.sql import functions as F\n"
                     f"from pyspark.sql.window import Window\n\n\n"
-                    f"def solve(spark: SparkSession, dfs: Dict[str, DataFrame]) -> DataFrame:\n"
+                    f"def solve(spark: SparkSession, {params}) -> DataFrame:\n"
                     f"    # TODO: replace with your solution\n"
                     f"    raise NotImplementedError\n")
                 made += 1

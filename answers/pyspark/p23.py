@@ -1,10 +1,13 @@
 # p23 [joins/med]
 # Implement solve(spark, employees) -> DataFrame. Expected columns: emp_id1, emp_id2, dept
-from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql import functions as F
-from pyspark.sql.window import Window
 
 
 def solve(spark: SparkSession, employees: DataFrame) -> DataFrame:
-    # TODO: replace with your solution
-    raise NotImplementedError
+    e1 = employees.alias("e1")
+    e2 = employees.alias("e2")
+    join_exp = (col("e1.emp_id") < col("e2.emp_id")) & (col("e1.dept") == col("e2.dept"))
+    
+    return e1 \
+			.join(e2,  join_exp, how="inner") \
+            .select(col("e1.emp_id"), col("e2.emp_id"), col("e1.dept")) \
+            .distinct()

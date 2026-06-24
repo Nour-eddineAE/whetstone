@@ -3,7 +3,25 @@
 answers/ stay the single source of truth: both the CLI and the web app read and
 write through here, so they can never grade different bytes.
 """
+import re
+
 from . import config, meta
+
+# Matches import lines the grader injects automatically (pyspark.* + typing).
+# Stripped from pyspark answers before displaying them in the editor so the
+# user sees only their logic, not boilerplate.
+_MANAGED_IMPORT_RE = re.compile(
+    r"^\s*(from\s+pyspark\b|import\s+pyspark\b|from\s+typing\s+import\b)"
+)
+
+
+def strip_pyspark_imports(code: str) -> str:
+    """Remove pyspark/typing import lines; drop leading blank lines left behind."""
+    lines = code.split("\n")
+    kept = [l for l in lines if not _MANAGED_IMPORT_RE.match(l)]
+    while kept and not kept[0].strip():
+        kept.pop(0)
+    return "\n".join(kept)
 
 
 def track_file(pid, track, ref=False):

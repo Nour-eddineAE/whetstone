@@ -32,7 +32,8 @@ def problem(pid, track):
         "difficulty": m["difficulty"], "ordered": m["ordered"],
         "columns": m["columns"], "tables": m["tables"], "tracks": m["tracks"],
         "prompt": m["prompt"], "hint": content.get_hint(pid, track),
-        "answer": content.read_answer(pid, track),
+        "answer": (content.strip_pyspark_imports(content.read_answer(pid, track))
+                   if track == "pyspark" else content.read_answer(pid, track)),
         "status": get_status(pid, track),
         "samples": dataset.samples_for(m["tables"]),
     })

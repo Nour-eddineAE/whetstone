@@ -10,10 +10,22 @@ problem sets `ordered: true`.
 import datetime as dt
 import decimal
 import importlib.util
+import types
 
 import duckdb
 
 from . import config, content, meta
+
+# Injected before user/ref code at exec time so neither needs explicit imports.
+# Includes the F alias for backward compat with ref solutions that use F.col().
+_PYSPARK_EXEC_HEADER = (
+    "from pyspark.sql.functions import *\n"
+    "from pyspark.sql import functions as F\n"
+    "from pyspark.sql.window import Window\n"
+    "from pyspark.sql.types import *\n"
+    "from pyspark.sql import SparkSession, DataFrame, Row\n"
+    "from typing import Dict, List, Optional, Any\n"
+)
 
 
 # ----------------------------------------------------------------- normalize
@@ -114,14 +126,14 @@ def _load_solve(pid, ref):
     f = content.track_file(pid, "pyspark", ref)
     if not f.exists():
         raise NotAttempted("no PySpark file")
-    # Fresh import EVERY call: the long-running server must never serve a stale
-    # solve() after the answer file is edited. A fresh spec + module object
-    # (never inserted into sys.modules) re-reads the file each time.
     importlib.invalidate_caches()
-    spec = importlib.util.spec_from_file_location(
-        f"_grade_{'ref' if ref else 'ans'}_{pid}", f)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    name = f"_grade_{'ref' if ref else 'ans'}_{pid}"
+    mod = types.ModuleType(name)
+    mod.__file__ = str(f)
+    # Prepend exec header so user code needs no import lines; duplicate imports
+    # in old files are harmless (Python silently overwrites the names).
+    full = _PYSPARK_EXEC_HEADER + f.read_text(encoding="utf-8")
+    exec(compile(full, str(f), "exec"), mod.__dict__)  # noqa: S102
     if not hasattr(mod, "solve"):
         raise NotAttempted("no solve()")
     return mod.solve
@@ -129,9 +141,10 @@ def _load_solve(pid, ref):
 
 def run_pyspark(pid, ref):
     spark, dfs = spark_ctx()
+    tables = meta.get(pid)["tables"]
     solve = _load_solve(pid, ref)
     try:
-        df = solve(spark, dfs)
+        df = solve(spark, *[dfs[t] for t in tables])
     except NotImplementedError:
         raise NotAttempted("solve() not implemented")
     if df is None:

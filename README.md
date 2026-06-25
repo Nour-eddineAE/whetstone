@@ -24,6 +24,11 @@ help others too.
 The browser UI: pick a language, pick a problem, write your answer, run it, and
 see pass or fail with a row by row diff.
 
+![Progress dashboard](docs/problems2.png)
+
+The progress dashboard: track streaks, score, category progress, activity, and
+jump back into what you were last working on.
+
 ## Setup
 
 All you need is Python.
